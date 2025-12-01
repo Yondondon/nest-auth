@@ -7,9 +7,16 @@ services:
       dockerfile: Dockerfile
     container_name: client
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
     ports:
       - 3000:3000
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ./nest-cli.json:/usr/src/app/nest-cli.json
+      - ./typeorm.config.ts:/usr/src/app/typeorm.config.ts
+      - /usr/src/app/node_modules
+      - /usr/src/app/dist
 
   db:
     image: postgres

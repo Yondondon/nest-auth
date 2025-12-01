@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   test() {
-    return 'test user service';
+    return 'test users service';
   }
 }
