@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+//TODO: add logging(for example pino logger)
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -12,12 +14,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        entities: ['entities/**/*.entity{.ts,.ts}'],
+        autoLoadEntities: true,
         migrations: ['database/migrations/*.ts'],
         migrationsTableName: 'migrations',
         migrationsRun: true,
         synchronize: false,
-        logging: true,
       }),
     }),
     UsersModule,
