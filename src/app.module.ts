@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
-//TODO: add logging(for example pino logger)
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +21,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       }),
     }),
     UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
