@@ -69,14 +69,12 @@ export class UsersService {
 
     if (users.length === 0) return [];
 
-    return users.map((item: UserEntity) => {
-      return {
-        username: item.username,
-        password: item.password,
-        uuid: item.uuid,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-      };
-    });
+    return users.map((item: UserEntity) => ({
+      username: item.username,
+      password: item.password,
+      uuid: item.uuid,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
   }
 }
