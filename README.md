@@ -7,6 +7,7 @@ Basic auth via JWT on NestJS + TypeScript + PostgreSQL
 - run `npm i`
 - fill `.env`; In case of using local db — set `DB_NAME` to `db`, other db params — as you wish
 - run `docker compose up -d --build`
+- run `npm run typeorm:run-migrations` to create users table
 
 Use `curl --location 'localhost:3000/auth/sign-up' \
 --header 'Content-Type: application/json' \
