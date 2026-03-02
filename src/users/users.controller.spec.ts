@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { UserDto } from '../dto/users';
+import { PaginationDto, UserDto } from '../dto/users';
 import { UserEntity } from '../entities/user';
 
 describe('UsersController', () => {
@@ -47,40 +47,45 @@ describe('UsersController', () => {
     usersController = moduleRef.get<UsersController>(UsersController);
   });
 
-  describe('findAll', () => {
+  describe('find', () => {
     it('should return an array of users', async () => {
       const result: UserDto[] = [mockUserDto, mockUserDto2];
-      jest.spyOn(usersService, 'findAll').mockResolvedValue(result);
+      const pagination: PaginationDto = { limit: 20, offset: 0 };
+      jest.spyOn(usersService, 'find').mockResolvedValue(result);
 
-      const response = await usersController.findAll();
+      const response = await usersController.find(pagination);
 
       expect(response).toBe(result);
       expect(response).toHaveLength(2);
       expect(response[0]).toEqual(mockUserDto);
       expect(response[1]).toEqual(mockUserDto2);
-      expect(usersService.findAll).toHaveBeenCalledTimes(1);
+      expect(usersService.find).toHaveBeenCalledWith(pagination);
+      expect(usersService.find).toHaveBeenCalledTimes(1);
     });
 
     it('should return an empty array when no users exist', async () => {
       const result: UserDto[] = [];
-      jest.spyOn(usersService, 'findAll').mockResolvedValue(result);
+      const pagination: PaginationDto = { limit: 20, offset: 0 };
+      jest.spyOn(usersService, 'find').mockResolvedValue(result);
 
-      const response = await usersController.findAll();
+      const response = await usersController.find(pagination);
 
       expect(response).toBe(result);
       expect(response).toHaveLength(0);
-      expect(usersService.findAll).toHaveBeenCalledTimes(1);
+      expect(usersService.find).toHaveBeenCalledWith(pagination);
+      expect(usersService.find).toHaveBeenCalledTimes(1);
     });
 
     it('should propagate service errors', async () => {
+      const pagination: PaginationDto = { limit: 20, offset: 0 };
       const error = new HttpException(
         'Database error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      jest.spyOn(usersService, 'findAll').mockRejectedValue(error);
+      jest.spyOn(usersService, 'find').mockRejectedValue(error);
 
-      await expect(usersController.findAll()).rejects.toThrow(error);
-      expect(usersService.findAll).toHaveBeenCalledTimes(1);
+      await expect(usersController.find(pagination)).rejects.toThrow(error);
+      expect(usersService.find).toHaveBeenCalledTimes(1);
     });
   });
 

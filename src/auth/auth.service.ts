@@ -31,7 +31,7 @@ export class AuthService {
     };
   }
 
-  async signUp(username: string, password: string): Promise<any> {
+  async signUp(username: string, password: string): Promise<string> {
     return await this.usersService.create({ username, password });
   }
 }

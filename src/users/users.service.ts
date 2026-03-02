@@ -1,9 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from '../dto/users';
+import { CreateUserDto, PaginationDto, UserDto } from '../dto/users';
 import { UserEntity } from '../entities/user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { UserDto } from '../dto/users';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -64,8 +63,12 @@ export class UsersService {
     };
   }
 
-  async findAll(): Promise<UserDto[]> {
-    const users: UserEntity[] = await this.userRepo.find();
+  async find(paginationDto: PaginationDto): Promise<UserDto[]> {
+    const { limit = 10, offset } = paginationDto;
+    const users: UserEntity[] = await this.userRepo.find({
+      take: limit,
+      skip: offset,
+    });
 
     if (users.length === 0) return [];
 

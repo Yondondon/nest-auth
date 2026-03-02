@@ -1,14 +1,14 @@
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserDto } from '../dto/users';
+import { PaginationDto, UserDto } from '../dto/users';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async findAll(): Promise<UserDto[]> {
-    return this.usersService.findAll();
+  async find(@Query() pagination: PaginationDto): Promise<UserDto[]> {
+    return this.usersService.find(pagination);
   }
 
   @Delete(':id')
