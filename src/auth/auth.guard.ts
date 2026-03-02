@@ -9,12 +9,14 @@ import { Request } from 'express';
 import { AuthenticatedRequest, JwtPayload } from '../interfaces';
 import { IS_PUBLIC_KEY } from '../decorators';
 import { Reflector } from '@nestjs/core';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
+    private readonly redisService: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -35,9 +37,15 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      request['user'] = await this.jwtService.verifyAsync<JwtPayload>(token, {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
+
+      if (await this.redisService.isBlocklisted(payload.jwtId)) {
+        throw new UnauthorizedException();
+      }
+
+      request['user'] = payload;
     } catch {
       throw new UnauthorizedException();
     }

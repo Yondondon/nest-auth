@@ -1,14 +1,12 @@
 import { Test } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { PaginationDto, UserDto } from '../dto/users';
-import { UserEntity } from '../entities/user';
 
 describe('UsersController', () => {
   let usersController: UsersController;
-  let usersService: UsersService;
+  let usersService: jest.Mocked<UsersService>;
 
   const mockUserDto: UserDto = {
     username: 'testuser',
@@ -30,48 +28,43 @@ describe('UsersController', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
-        UsersService,
         {
-          provide: getRepositoryToken(UserEntity),
+          provide: UsersService,
           useValue: {
             find: jest.fn(),
-            findOne: jest.fn(),
-            save: jest.fn(),
             remove: jest.fn(),
           },
         },
       ],
     }).compile();
 
-    usersService = moduleRef.get<UsersService>(UsersService);
     usersController = moduleRef.get<UsersController>(UsersController);
+    usersService = moduleRef.get(UsersService);
+
+    jest.clearAllMocks();
   });
 
   describe('find', () => {
     it('should return an array of users', async () => {
-      const result: UserDto[] = [mockUserDto, mockUserDto2];
       const pagination: PaginationDto = { limit: 20, offset: 0 };
-      jest.spyOn(usersService, 'find').mockResolvedValue(result);
+      usersService.find.mockResolvedValue([mockUserDto, mockUserDto2]);
 
-      const response = await usersController.find(pagination);
+      const result = await usersController.find(pagination);
 
-      expect(response).toBe(result);
-      expect(response).toHaveLength(2);
-      expect(response[0]).toEqual(mockUserDto);
-      expect(response[1]).toEqual(mockUserDto2);
+      expect(result).toEqual([mockUserDto, mockUserDto2]);
+      expect(result).toHaveLength(2);
       expect(usersService.find).toHaveBeenCalledWith(pagination);
       expect(usersService.find).toHaveBeenCalledTimes(1);
     });
 
     it('should return an empty array when no users exist', async () => {
-      const result: UserDto[] = [];
       const pagination: PaginationDto = { limit: 20, offset: 0 };
-      jest.spyOn(usersService, 'find').mockResolvedValue(result);
+      usersService.find.mockResolvedValue([]);
 
-      const response = await usersController.find(pagination);
+      const result = await usersController.find(pagination);
 
-      expect(response).toBe(result);
-      expect(response).toHaveLength(0);
+      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
       expect(usersService.find).toHaveBeenCalledWith(pagination);
       expect(usersService.find).toHaveBeenCalledTimes(1);
     });
@@ -82,7 +75,7 @@ describe('UsersController', () => {
         'Database error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      jest.spyOn(usersService, 'find').mockRejectedValue(error);
+      usersService.find.mockRejectedValue(error);
 
       await expect(usersController.find(pagination)).rejects.toThrow(error);
       expect(usersService.find).toHaveBeenCalledTimes(1);
@@ -92,7 +85,7 @@ describe('UsersController', () => {
   describe('removeUser', () => {
     it('should successfully remove a user', async () => {
       const userId = '00000000-0000-0000-0000-000000000000';
-      jest.spyOn(usersService, 'remove').mockResolvedValue(undefined);
+      usersService.remove.mockResolvedValue(undefined);
 
       await usersController.removeUser(userId);
 
@@ -100,13 +93,13 @@ describe('UsersController', () => {
       expect(usersService.remove).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw an error when user does not exist', async () => {
+    it('should throw when user does not exist', async () => {
       const userId = 'non-existent-uuid';
       const error = new HttpException(
         'User does not exist',
         HttpStatus.BAD_REQUEST,
       );
-      jest.spyOn(usersService, 'remove').mockRejectedValue(error);
+      usersService.remove.mockRejectedValue(error);
 
       await expect(usersController.removeUser(userId)).rejects.toThrow(error);
       expect(usersService.remove).toHaveBeenCalledWith(userId);
@@ -119,7 +112,7 @@ describe('UsersController', () => {
         'Database error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      jest.spyOn(usersService, 'remove').mockRejectedValue(error);
+      usersService.remove.mockRejectedValue(error);
 
       await expect(usersController.removeUser(userId)).rejects.toThrow(error);
       expect(usersService.remove).toHaveBeenCalledWith(userId);

@@ -5,14 +5,18 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
     UsersModule,
+    RedisModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '3600s' },
+      signOptions: {
+        expiresIn: Number(process.env.JWT_ACCESS_TOKEN_TTL_SECONDS) ?? '900', // 15 min
+      },
     }),
   ],
   controllers: [AuthController],

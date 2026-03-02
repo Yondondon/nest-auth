@@ -1,5 +1,5 @@
 services:
-  client:
+  nest-auth-app:
     env_file:
       - ./.env
     build:
@@ -8,6 +8,11 @@ services:
     container_name: client
     environment:
       NODE_ENV: development
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      nest-auth-redis:
+        condition: service_healthy
     ports:
       - '${APP_PORT}:${APP_PORT}'
     volumes:
@@ -18,7 +23,22 @@ services:
       - /usr/src/app/node_modules
       - /usr/src/app/dist
 
-  db:
+  nest-auth-redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', 'ping' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nest-auth-db:
     image: postgres
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -30,3 +50,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
