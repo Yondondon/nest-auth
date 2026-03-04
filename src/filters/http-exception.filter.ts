@@ -22,10 +22,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message = isHttpException
-      ? exception.getResponse()
-      : 'Internal server error';
-
     if (!isHttpException) {
       this.logger.error(
         `Unhandled exception on ${request.method} ${request.url}`,
@@ -33,11 +29,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
-    response.status(status).json({
-      statusCode: status,
-      message,
-      path: request.url,
-      timestamp: new Date().toISOString(),
-    });
+    const exceptionResponse = isHttpException ? exception.getResponse() : null;
+    const body =
+      typeof exceptionResponse === 'object' && exceptionResponse !== null
+        ? { ...exceptionResponse as object, path: request.url, timestamp: new Date().toISOString() }
+        : {
+            statusCode: status,
+            message: exceptionResponse ?? 'Internal server error',
+            path: request.url,
+            timestamp: new Date().toISOString(),
+          };
+
+    response.status(status).json(body);
   }
 }
